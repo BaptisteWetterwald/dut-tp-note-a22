@@ -1,0 +1,88 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class Ant extends Occupant
+{
+    colony
+}
+
+class Colony extends Occupant
+{
+    pheromoneDeposit
+    foodWithdrawal
+}
+
+class Display
+{
+
+}
+
+class Food extends Occupant
+{
+    quantity
+}
+
+class GameController
+{
+    graphe
+    rdm
+    evaporationParam
+}
+
+class Graphe
+{
+    tabGrid
+    listAnts
+    listPheromones
+}
+
+class Main
+{
+}
+
+class Obstacle extends Occupant
+{
+}
+
+class Occupant
+{
+    x
+    y
+}
+
+class Pheromone extends Occupant
+{
+    quantity
+}
+
+class Queen extends Ant
+{
+}
+
+class Save
+{
+    fileSave
+}
+
+class Soldier extends Ant
+{
+}
+
+class Worker extends Ant
+{
+    carried
+}
+
+Main - GameController : lance le jeu >
+GameController - Graphe : lit les positions >
+Graphe - Occupant : est sur <
+Ant -up- Colony : appartient à une >
+Queen -up- Soldier : donne vie >
+Queen - Worker : donne vie >
+Worker - Food : ramasse et dépose >
+Worker -up- Pheromone : dépose >
+GameController -- Display : affiche la grille >
+GameController -- Save : enregistre les déplacements >
+Save - Graphe : lit les positions >
+
+@enduml
