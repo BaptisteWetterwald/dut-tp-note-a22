@@ -1,0 +1,204 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam circledCharacterRadius 0
+skinparam circledCharacterFontSize 0
+skinparam classFontStyle Bold
+skinparam ArrowColor black
+
+title __TP Note__\n
+
+namespace TPNote {
+
+    abstract class Ant extends Occupant
+    {
+        - colony : Colony
+
+        {abstract} + seDeplacer()
+        + deplacerVers(x:Integer, y:Integer)
+        + getColony():Colony
+        + getListeVoisins() : Integer[*]
+        + deplacementHasard()
+    }
+
+    interface AntFacadeController
+    {
+        {abstract} + setParameters(evaporationParam:Integer, foodParam:Integer, pheromoneParam:Integer)
+        {abstract} + createGrid(width:Integer, height:Integer)
+        {abstract} + putObstacle(row:Integer, column:Integer)
+        {abstract} + putFood(row:Integer, column:Integer, quantity:Integer)
+        {abstract} + createColony(width:Integer, height:Integer)
+        {abstract} + createSoldiers(amount:Integer)
+        {abstract} + createWorkers(amount:Integer)
+        {abstract} + setAntFile(antLogFile:String)
+        {abstract} + play(duration:Integer, record:boolean):BitSet[*]
+    }
+
+    class Colony extends Occupant
+    {
+        - pheromoneDeposit:Integer
+        - foodWithdrawal:Integer
+
+        + getReine():Queen
+        + getFoodWithdrawal():Integer
+        + getPheromoneDeposit():Integer
+    }
+
+
+    class Display
+    {
+        - cellSize:Integer
+        - height:Integer
+        - width:Integer
+
+        + update(cells:BitSet[*])
+    }
+
+    class Food extends Occupant
+    {
+        - quantity:Integer
+
+        + getQuantity():Integer
+        + setQuantity(newQty:Integer)
+    }
+
+    class GameController implements AntFacadeController
+    {
+        {static} + rdm:Random
+        - graphe:Graphe
+        - evaporationParam:Integer
+        - foodParam:Integer
+        - pheromoneParam:Integer
+        - save:Save
+
+        + setParameters(evaporationParam:Integer, foodParam:Integer, pheromoneParam:Integer)
+        + createGrid(width:Integer, height:Integer)
+        + putObstacle(row:Integer, column:Integer)
+        + putFood(row:Integer, column:Integer, quantity:Integer)
+        + createColony(width:Integer, height:Integer)
+        + createSoldiers(amount:Integer)
+        + createWorkers(amount:Integer)
+        + setAntFile(antLogFile:String)
+        + play(duration:Integer, record:boolean):BitSet[*]
+        - refreshBitSet(bs:BitSet[*], graphe:Graphe)
+        <color red> + processingSoldiers(s:Soldier)
+        <color red> + processingWorkers(w:Worker)
+
+
+    }
+
+    class Graphe
+    {
+        - tabGrid:Occupant[*]
+        - listAnts:Ant[*]
+        - listPheromones:Pheromone[*]
+
+        + deplacementValide(x:Integer, y:Integer):boolean
+        + getFourmiliere():Colony
+        + getListFourmis():Ant[*]
+        + getListPheromones():Pheromone[*]
+        + getTabGrid():Occupant[*]
+        + contientFourmiliere(x:Integer, y:Integer):boolean
+        + contientObstacle(x:Integer, y:Integer):boolean
+        + contientSoldat(x:Integer, y:Integer):boolean
+        + contientPheromone(x:Integer, y:Integer):boolean
+        + contientOuvriereVide(x:Integer, y:Integer):boolean
+        + contientOuvrierePorteuse(x:Integer, y:Integer):boolean
+        + contientNourriture(x:Integer, y:Integer):boolean
+        - fill()
+        + getPheromoneAt(x:Integer, y:Integer):Pheromone
+        + getFoodAt(x:Integer, y:Integer):Food
+        + putFood(x:Integer, y:Integer, quantity:Integer)
+    }
+
+    class Main
+    {
+        {static} + main(args : String[*])
+    }
+
+    class Obstacle extends Occupant
+    {
+
+    }
+
+    class Occupant
+    {
+        - x:Integer
+        - y:Integer
+        - graphe:Graphe
+
+        + getGraphe():Graphe
+        + getX():Integer
+        + getY():Integer
+        + setX(x:Integer)
+        + setY(y:Integer)
+    }
+
+    class Pheromone extends Occupant
+    {
+        - quantity:Integer
+
+        + getQuantity():Integer
+        + setQuantity(newQty:Integer)
+        + evaporate(evapQty:Integer)
+
+    }
+    class Queen extends Ant
+    {
+        + donnerVie(c:Class)
+        + seDeplacer()
+    }
+
+    class Save
+    {
+        - fileSave:File
+
+        + saveMoves(g:Graphe, iteration:Integer)
+    }
+
+    class Soldier extends Ant
+    {
+        + seDeplacer()
+    }
+
+    class Worker extends Ant
+    {
+        - carried:Integer
+        - listeCasesParcourues:Integer[*]
+
+        + depositPheromone()
+        + takeFood()
+        + seDeplacer()
+        - depositAllFood()
+        - getBestLocation():Integer[*]
+        - isSorted(list:Integer[*]):boolean
+        + getListeCasesParcourues():Integer[*]
+        + getCarried():Integer
+        + setCarried(newQty:Integer)
+   }
+
+    abstract class Fight #red
+    {
+        <color red> {static} +compare(a1:Ant, a2:Ant):Boolean
+    }
+
+    Main .> GameController : <<use>>
+    GameController "1" *-> "1" Graphe : lit les positions >
+    Graphe "1" *- "n" Occupant : est sur <
+    Ant "n" -> "1" Colony : fait partie d'une >
+    Queen "1" .up.> "n" Soldier : donne vie >
+    Queen "1" .> "n" Worker : donne vie >
+    Worker -> Food : ramasse et dépose >
+    Worker -up-> Pheromone : dépose >
+    GameController "1" <. "1" Display : affiche les déplacements >
+    GameController "1" --> "1" Save : enregistre les déplacements >
+    Save "1" .> "1" Graphe : <<use>>
+
+    Soldier .> Fight #red : <<use>>
+    GameController .> Soldier #red : <<use>>
+    GameController .> Worker #red : <<use>>
+    Fight .> Ant #red : <<use>>
+}
+@enduml
