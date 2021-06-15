@@ -181,7 +181,7 @@ namespace TPNote {
 
     abstract class Fight #red
     {
-        <color red> {static} +compare(a1:Ant, a2:Ant):Boolean
+        {static} +compare(a1:Ant, a2:Ant):Boolean
     }
 
     Main .> GameController : <<use>>
