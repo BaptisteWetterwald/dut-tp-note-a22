@@ -1,0 +1,45 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+participant "s:Soldier" as s
+participant "g:Graphe" as g
+participant "f:Fight" as f
+
+s -> s++ : seDeplacer()
+return
+
+s->s++ : getX()
+return x
+
+s->s++ : getY()
+return y
+
+s->g++ : getTabGrid(x, y)
+return listeOccupants:Occupant[*]
+
+s->s : listeSoldats:Soldier[*] = {}
+loop Occupant o in listeOccupants
+    alt o instanceof Soldier AND o != s
+        s->s:listeSoldats.Add(o)
+    end
+end
+
+alt listeSoldats.size() = 1
+    s->f++ : compare(s,  listeSoldats.get(0))
+    return won
+    alt won
+       s->s : listeOccupants.Remove(listeSoldats.get(0))
+       loop Occupant o in listeOccupants
+           alt o instanceof Worker
+               s->s: listeOccupants.Remove(o)
+           end
+       end
+    else
+        s->s : listeOccupants.Remove(s)
+    end
+
+else listeSoldats.size() > 1
+    s->s : listeOccupants.Remove(s)
+end
+
+@enduml
