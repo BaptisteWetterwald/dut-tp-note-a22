@@ -1,45 +1,91 @@
 @startuml
 'https://plantuml.com/sequence-diagram
 
+participant "g:GameController" as gc
 participant "s:Soldier" as s
 participant "g:Graphe" as g
-participant "f:Fight" as f
+participant "Fight" as f
+participant "o:Occupant" as o
+participant "w:Worker" as w
 
-s -> s++ : seDeplacer()
-return
+gc -> s++ : processingSoldiers(s)
 
-s->s++ : getX()
-return x
+    s -> s++ : seDeplacer()
+    return
 
-s->s++ : getY()
-return y
+    s->s++ : getX()
+    return x
 
-s->g++ : getTabGrid(x, y)
-return listeOccupants:Occupant[*]
+    s->s++ : getY()
+    return y
 
-s->s : listeSoldats:Soldier[*] = {}
-loop Occupant o in listeOccupants
-    alt o instanceof Soldier AND o != s
-        s->s:listeSoldats.Add(o)
+    s->s++ : getColony()
+    return colony
+
+    s->g++ : getTabGrid(x, y)
+    return listeOccupants:Occupant[*]
+
+    s->s : listeSoldats:Soldier[*] = {}
+
+    loop Occupant o in listeOccupants
+        alt o instanceof Soldier AND o != s
+            s->o++ : getColony()
+            return colonySoldier
+            alt colonySoldier != colony
+                s->s:listeSoldats.Add((Soldier)o)
+            end
+        end
     end
-end
 
-alt listeSoldats.size() = 1
-    s->f++ : compare(s,  listeSoldats.get(0))
-    return won
-    alt won
-       s->s : listeOccupants.Remove(listeSoldats.get(0))
-       loop Occupant o in listeOccupants
-           alt o instanceof Worker
-               s->s: listeOccupants.Remove(o)
+    alt listeSoldats.size() = 1
+        s->f++ : compare(s,  listeSoldats.get(0))
+        return won
+        alt won
+           s->s : listeOccupants.Remove(listeSoldats.get(0))
+           loop Occupant o in listeOccupants
+               alt o instanceof Worker
+                   s->o++ : getColony()
+                   return colonyWorker
+                   alt colonyWorker != colony
+                        s->s: listeOccupants.Remove(o)
+                   end
+               end
            end
-       end
-    else
+        else
+            s->s : listeOccupants.Remove(s)
+        end
+
+    else listeSoldats.size() > 1
         s->s : listeOccupants.Remove(s)
     end
+return
 
-else listeSoldats.size() > 1
-    s->s : listeOccupants.Remove(s)
-end
+gc -> w++:processingWorkers(w)
+    w->w++ : seDeplacer()
+    return
 
+    w->w++ : getX()
+    return x
+
+    w->w++ : getY()
+    return y
+
+    w->w++ : getColony()
+    return colony
+
+    w->g++ : getTabGrid(x, y)
+    return listeOccupants:Occupant[*]
+
+    w->w:alive = true
+    loop Occupant o in listeOccupants
+        alt o instanceof Soldier
+            w->o++ : getColony()
+            return colonySoldier
+            alt colonySoldier != colony AND alive
+                w->w:listeOccupants.Remove(w)
+                w->w:alive = false
+            end
+        end
+    end
+return
 @enduml
